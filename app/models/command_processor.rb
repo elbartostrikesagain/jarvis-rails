@@ -1,81 +1,95 @@
 class CommandProcessor
-  # @staticmethod
-  # def humanify(result):
-  #     result = result.split("\/")
-  #     if len(result) == 1:
-  #         return result[0]
-  #     else:
-  #         newResult = ""
-  #         for i,r in enumerate(result):
-  #             if i % 2 == 0:
-  #                 newResult += r + " "
-  #             elif r.isdigit():
-  #                 newResult += "over " + r + " "
-  #             else:
-  #                 newResult += "per " + r + " "
-  #     return newResult
+  attr_accessor :command
   
-  # @staticmethod
-  # def processWolframAlphaResult(result):
-  #   query_string = ""
-  #   for idx,rs in enumerate(result.results):
-  #       if idx == 2:
-  #           break
-        
-  #       query_string += CommandProcessor.humanify(rs.result)
-  #       if idx == 0:
-  #           query_string += " is "
-  #   return query_string
-  
-  # @staticmethod
-  # def extractCommand(command):
-  #   if not CommandProcessor.isCommand(command):
-  #     return False
-  #   command = command.split(' ',1)[1] #removes jarvis from the command
-    
-  #   # entities = CommandProcessor.entities(command)
-  #   entities = command.split(' ')
-    
-  #   #check for weather
-  #   for entity in entities:
-  #     if entity == "weather":
-  #       return {"command": "weather"}
-  #     if entity == "temp" or entity == "temperature":
-  #         return {"command":"temperature"}
-  #     if entity == "wind":
-  #         return {"command":"wind"}
-  #     if entity == "time":
-  #         return {'command':'time'}
-  #     if entity == "volume":
-  #         return {'command':'volume','data':' '.join(entities)}
-    
-  #   #check for music
-  #   if entities[0] == "play" and len(entities) > 1:
-  #     entities.pop(0) #remove play
-  #     return {'command': 'play', 'data': urllib.quote(' '.join(entities))}
-  
-  #   #check for pause command
-  #   if entities[0] in ["pause", "paws", "popeyes", "Paz", "pies", "pa"]:
-  #     return {'command': 'pause'}
+  def initialize(command)
+    @command = command
+  end
 
-  #   #check for resume command
-  #   if entities[0] in ["resume", "play", "repeat"]:
-  #     return {'command': 'resume'}
-  
-  #   #check for wolfram alpha question
-  #   if entities[0] in ["what", "ask", "what's"]:
-  #       entities.pop(0)
-  #       question = " ".join(entities)
-  #       query = wolframalpha.WolframAlpha(question)
-  #       query_string = CommandProcessor.processWolframAlphaResult(query)
-  #       return {'command':'ask', 'data': query_string }
+  def extract_command
+    return false unless self.is_command?
 
-  #   return {"command": "unknown"}
-  
-  # @staticmethod
-  # def isCommand(command):
-  #   if command.split(" ")[0].lower() in ["travis", "jarvis", "jaris", "javis"]:
-  #     return True
-  #   else:
-  #     return False
+    entities = command.split(' ')
+    entities = command[1..command.length] #probably a better way to remove first element
+
+    entities.each do |entity|
+      if entity == "weather"
+        return {"command" => "weather"}
+      elsif entity == "temp" or entity == "temperature":
+        return {"command" => "temperature"}
+      elsif entity == "wind"
+        return {"command" => "wind"}
+      elsif entity == "time"
+        return {'command' => 'time'}
+      elsif entity == "volume":
+        return {'command' => 'volume','data' => ' '.join(entities)}
+      end
+    end
+
+    #check for music
+    if entities[0] == "play" && entities.length > 1
+      entites = entities[1..entities.length]
+      return {'command': 'play', 'data': URI.encode(entities.join(" "))}
+    
+    #check for pause command
+    elsif ["pause", "paws", "popeyes", "Paz", "pies", "pa"].include? entities[0]
+      return {'command': 'pause'}
+    
+    #check for resume command
+    elsif ["resume", "play", "repeat"].include? entities[0]
+      return {'command': 'resume'}
+    
+    #check for wolfram alpha question
+    elsif ["what", "ask", "what's"].include? entities[0]
+        entities = entities[1..entities.length]
+        question = entities.join(" ")
+        query = wolframalpha.WolframAlpha(question) #TODO wolfram alpha
+        query_string = self.process_wolfram_alpha_result(query)
+        return {'command':'ask', 'data': query_string }
+    end
+    
+    return {"command": "unknown"}
+
+  end
+
+  def is_command?
+    first_word = command.split(" ")[0].downcase
+    ["travis", "jarvis", "jaris", "javis"].include?(first_word) ? true : false
+  end
+
+  protected
+
+  def process_wolfram_alpha_result(result)
+    query_string = ""
+    result.each_with_index do |r, i|
+      break if i == 2
+      
+      query_string += humanify(r.result)
+      
+      query_string += " is " if i == 0
+    end
+    query_string
+  end
+
+
+  def humanify(result)
+    result = result.split("\/")
+    return result[0] result.length == 1
+
+    new_result = ""
+
+    result.each_with_index do |r, i|
+      if i % 2 == 0
+        new_result += r + " "
+      elsif r.is_a?(Integer)
+        new_result += "over " + r + " "
+      else
+        new_result += "per " + r + " "
+      end
+
+      return new_result
+    end
+  end
+
+
+
 end
