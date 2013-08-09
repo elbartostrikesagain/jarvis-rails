@@ -42,9 +42,10 @@ class CommandProcessor
     elsif ["what", "ask", "what's"].include? entities[0]
         entities = entities[1..entities.length]
         question = entities.join(" ")
-        query = WolframAlpha::Parser.new(question).pods #TODO wolfram alpha
-        query_string = self.process_wolfram_alpha_result(query)
-        return {'command' =>'ask', 'data' => query_string }
+        #pods = WolframAlpha::Parser.new(question).pods
+        pods = [OpenStruct.new(text: "all grades of gasoline | average price per gallon | Boulder, Colorado"), OpenStruct.new(text: "$3.571/gal  (US dollars per gallon)  (Monday, August 5, 2013)")]
+        answer = self.process_wolfram_alpha_result(pods)
+        return {'command' =>'ask', 'data' => answer }
     end
     
     return {"command" => "unknown"}
@@ -59,10 +60,9 @@ class CommandProcessor
   protected
 
   def process_wolfram_alpha_result(pods)
-    humanify(pods[0]) + " is " + humanify(pods[1])
+    humanify(pods[0].text) + " is " + humanify(pods[1].text)
   end
 
-  #TODO
   def humanify(result)
     result = result.split("\/")
     return result[0] if result.length == 1

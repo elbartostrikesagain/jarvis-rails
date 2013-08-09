@@ -1,0 +1,33 @@
+<h1>Listing commands</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Data</th>
+      <th>Module</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @commands.each do |command| %>
+      <tr>
+        <td><%= command.name %></td>
+        <td><%= command.type %></td>
+        <td><%= command.data %></td>
+        <td><%= command.module %></td>
+        <td><%= link_to 'Show', command %></td>
+        <td><%= link_to 'Edit', edit_command_path(command) %></td>
+        <td><%= link_to 'Destroy', command, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Command', new_command_path %>
