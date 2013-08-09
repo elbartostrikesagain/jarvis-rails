@@ -6,21 +6,21 @@ class CommandProcessor
   end
 
   def extract_command
-    return false unless self.is_command?
+    return {} unless self.is_command?
 
     entities = command.split(' ')
-    entities = command[1..command.length] #probably a better way to remove first element
+    entities = entities[1..entities.length] #probably a better way to remove first element
 
     entities.each do |entity|
       if entity == "weather"
         return {"command" => "weather"}
-      elsif entity == "temp" or entity == "temperature":
+      elsif entity == "temp" || entity == "temperature"
         return {"command" => "temperature"}
       elsif entity == "wind"
         return {"command" => "wind"}
       elsif entity == "time"
         return {'command' => 'time'}
-      elsif entity == "volume":
+      elsif entity == "volume"
         return {'command' => 'volume','data' => ' '.join(entities)}
       end
     end
@@ -28,26 +28,26 @@ class CommandProcessor
     #check for music
     if entities[0] == "play" && entities.length > 1
       entites = entities[1..entities.length]
-      return {'command': 'play', 'data': URI.encode(entities.join(" "))}
+      return {'command' => 'play', 'data' => URI.encode(entities.join(" "))}
     
     #check for pause command
     elsif ["pause", "paws", "popeyes", "Paz", "pies", "pa"].include? entities[0]
-      return {'command': 'pause'}
+      return {'command' => 'pause'}
     
     #check for resume command
     elsif ["resume", "play", "repeat"].include? entities[0]
-      return {'command': 'resume'}
+      return {'command' => 'resume'}
     
     #check for wolfram alpha question
     elsif ["what", "ask", "what's"].include? entities[0]
         entities = entities[1..entities.length]
         question = entities.join(" ")
-        query = wolframalpha.WolframAlpha(question) #TODO wolfram alpha
+        query = WolframAlpha::Parser.new(question).pods #TODO wolfram alpha
         query_string = self.process_wolfram_alpha_result(query)
-        return {'command':'ask', 'data': query_string }
+        return {'command' =>'ask', 'data' => query_string }
     end
     
-    return {"command": "unknown"}
+    return {"command" => "unknown"}
 
   end
 
@@ -58,22 +58,14 @@ class CommandProcessor
 
   protected
 
-  def process_wolfram_alpha_result(result)
-    query_string = ""
-    result.each_with_index do |r, i|
-      break if i == 2
-      
-      query_string += humanify(r.result)
-      
-      query_string += " is " if i == 0
-    end
-    query_string
+  def process_wolfram_alpha_result(pods)
+    humanify(pods[0]) + " is " + humanify(pods[1])
   end
 
-
+  #TODO
   def humanify(result)
     result = result.split("\/")
-    return result[0] result.length == 1
+    return result[0] if result.length == 1
 
     new_result = ""
 

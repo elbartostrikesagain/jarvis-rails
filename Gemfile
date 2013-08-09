@@ -44,7 +44,7 @@ end
 # Use debugger
 # gem 'debugger', group: [:development, :test]
 
-#gem 'wolfram', git: 'git@github.com:elbartostrikesagain/wolfram_alpha.git'
+gem 'wolfram', git: 'git@github.com:elbartostrikesagain/wolfram_alpha.git'
 
 group :development, :test do
   gem 'pry'
